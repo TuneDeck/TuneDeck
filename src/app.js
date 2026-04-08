@@ -398,11 +398,14 @@ function playlistArtworkMarkup(playlist) {
   const count = (playlist.tracks || []).length;
   const safeName = escapeHtml(playlist.name || 'Playlist');
   return `
-    <div class="playlist-art square-playlist-art" style="background:${playlistGradient(playlist.name)}">
-      <div class="playlist-art-glow"></div>
-      <span class="playlist-art-label">Playlist</span>
-      <strong>${safeName}</strong>
-      <small>${count} track${count === 1 ? '' : 's'}</small>
+    <div class="playlist-art square-playlist-art apple-style-playlist" style="background:${playlistGradient(playlist.name)}">
+      <div class="playlist-bars">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="playlist-art-bottom">
+        <strong>${safeName}</strong>
+        <small>${count} track${count === 1 ? '' : 's'}</small>
+      </div>
     </div>`;
 }
 
@@ -441,7 +444,7 @@ function createTrackCard(song, songs = state.songs) {
   });
   card.querySelector('[data-action="queue"]').addEventListener('click', (e) => {
     e.stopPropagation();
-    addToQueue(song);
+    openPlaylistPicker(song, e.currentTarget);
   });
   card.addEventListener('click', () => openSongDetail(song));
   attachArtistLinkEvents(card);

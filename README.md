@@ -25,16 +25,6 @@ A sleek and modern Electron-based desktop music player featuring playlists, smar
 
 ---
 
-## 🖼️ Preview
-
-> Screenshots will be added here soon.
-
-```md
-Add your screenshots in this section for GitHub presentation.
-```
-
----
-
 ## 🚀 Installation
 
 ```bash
