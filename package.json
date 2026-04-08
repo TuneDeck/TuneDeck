@@ -1,7 +1,7 @@
 {
-  "name": "ncs-electron-prototype",
-  "version": "0.4.0",
-  "description": "Modern NCS desktop prototype with queue, autoplay, search and local playlists using an external PHP API.",
+  "name": "tunedeck",
+  "version": "0.7.0",
+  "description": "Modern TuneDeck desktop prototype with queue, playlists, song pages, artist pages and settings using an external PHP API.",
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
@@ -18,8 +18,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "org.schmittdev.ncsplayer",
-    "productName": "NCS Player Prototype",
+    "appId": "org.schmittdev.tunedeck",
+    "productName": "TuneDeck",
     "directories": {
       "buildResources": "build",
       "output": "dist"
@@ -35,14 +35,17 @@
       "target": [
         "portable",
         "nsis"
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "mac": {
       "target": [
         "dmg",
         "zip"
       ],
-      "category": "public.app-category.music"
-    }
+      "category": "public.app-category.music",
+      "icon": "build/icon.png"
+    },
+    "icon": "build/icon.png"
   }
 }

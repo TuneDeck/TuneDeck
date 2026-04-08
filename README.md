@@ -1,41 +1,19 @@
-# NCS Player Prototype
+# TuneDeck
 
-A modern Electron desktop prototype for Windows and macOS that talks directly to your own NCS metadata API:
+TuneDeck is a modern Electron desktop prototype for Windows and macOS that talks directly to your own NCS metadata API:
 
 `https://api.schmittdev.org/ncsplayer/public/api.php`
 
 ## Highlights
 
 - clean Spotify-inspired desktop layout
-- Home, Discover, Genres, Search and Library views
-- dedicated queue drawer with reorder, remove and play-from-queue actions
-- autoplay, next, previous and shuffle controls
+- custom title bar with native window actions
+- song pages, artist pages and playlist pages
 - local playlists and liked songs via `electron-store`
+- dedicated queue drawer and queue access in the bottom player
+- settings drawer with about and license sections
 - search against your own API
 - genre detail pages with a proper song list
-
-## Stack
-
-- Electron
-- Vanilla JavaScript
-- electron-store
-- electron-builder
-
-## Project structure
-
-```text
-.
-├── main.js
-├── preload.js
-├── package.json
-├── src/
-│   ├── app.js
-│   ├── index.html
-│   └── styles.css
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-└── README.md
-```
 
 ## Quick start
 
@@ -51,33 +29,18 @@ npm run dist:win
 npm run dist:mac
 ```
 
-## API contract used by the app
-
-The renderer expects these endpoints to work:
-
-- `?action=songs&page=1&limit=120`
-- `?action=search&q=favela`
-- `?action=health`
-
-Expected song fields:
-
-- `title`
-- `slug`
-- `artists` or `artist_raw`
-- `genre` or `genres`
-- `audio_url`
-- `cover_large_url` / `cover_medium_url` / `cover_url`
-- `release_date`
-
-## Queue behavior
-
-- clicking a song starts playback from the current list context
-- clicking `+` adds a track to the queue
-- queue drawer lets you reorder, remove or jump to any queued track
-- autoplay continues through the queue
-
 ## Notes
 
-- this prototype intentionally keeps state local on the device
-- playlists and likes are stored in Electron's local storage through `electron-store`
-- if the API is unreachable, the UI will show a fallback message instead of crashing
+- project name: **TuneDeck**
+- playlists and likes are stored locally on the device
+- the program license section in-app points to **GNU GENERAL PUBLIC LICENSE Version 3**
+- the music terms section is intentionally left as your own placeholder text
+
+
+## Latest UI updates
+
+- generated gradient playlist covers inspired by Deezer / Apple Music
+- no login avatar in the top bar
+- song page actions cleaned up and license modal added
+- clicking player cover or title opens the song page
+- clicking artist names opens the artist page everywhere in the app
