@@ -201,7 +201,7 @@ async function apiRequest(params = {}) {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
   });
   const res = await fetch(url.toString(), { cache: 'no-store' });
-  if (!res.ok) throw new Error(`API request failed: ${res.status}`);
+  if (!res.ok) throw new Error(`Unable to retrieve content: ${res.status}`);
   return res.json();
 }
 
@@ -1261,8 +1261,8 @@ async function init() {
   } catch (err) {
     console.error(err);
     const message = err?.message ? escapeHtml(err.message) : 'Unknown error';
-    toast('Could not load API data. Check API URL or CORS.');
-    els.recentGrid.innerHTML = `<div class="empty-state">API could not be reached.<br><small>${message}</small></div>`;
+    toast('Could not load library data. Check API URL or CORS.');
+    els.recentGrid.innerHTML = `<div class="empty-state">Unable to load music library at the moment.<br><small>${message}</small></div>`;
     els.discoverGrid.innerHTML = '<div class="empty-state">Please check https://api.schmittdev.org/ncsplayer/public/api.php</div>';
   }
 }

@@ -1,46 +1,104 @@
-# TuneDeck
+# ![TuneDeck Logo](./src/assets/tunedeck-logo.png)
 
-TuneDeck is a modern Electron desktop prototype for Windows and macOS that talks directly to your own NCS metadata API:
+<h1 align="center">TuneDeck</h1>
+<p align="center"><strong>Modern Desktop Music Experience powered by NCS</strong></p>
 
-`https://api.schmittdev.org/ncsplayer/public/api.php`
+<p align="center">
+A sleek and modern Electron-based desktop music player featuring playlists, smart queue management, artist/song pages, search, and a premium dark UI inspired by modern streaming platforms.
+</p>
 
-## Highlights
+---
 
-- clean Spotify-inspired desktop layout
-- custom title bar with native window actions
-- song pages, artist pages and playlist pages
-- local playlists and liked songs via `electron-store`
-- dedicated queue drawer and queue access in the bottom player
-- settings drawer with about and license sections
-- search against your own API
-- genre detail pages with a proper song list
+## ✨ Features
 
-## Quick start
+- 🎵 Modern desktop music player with immersive UI
+- 📚 Playlist management with custom covers
+- 🔍 Global search for tracks, artists and genres
+- 👤 Dedicated artist pages
+- 💿 Detailed song information pages
+- 📥 Smart queue / up-next system
+- ❤️ Like / favorite tracks
+- 📜 License viewer integration
+- ⚙️ Settings panel
+- 🖥️ Native desktop titlebar controls
+- 🌙 Premium dark glassmorphism design
+
+---
+
+## 🖼️ Preview
+
+> Screenshots will be added here soon.
+
+```md
+Add your screenshots in this section for GitHub presentation.
+```
+
+---
+
+## 🚀 Installation
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-## Production builds
+---
+
+## 🛠️ Build
 
 ```bash
 npm run dist:win
-npm run dist:mac
 ```
 
-## Notes
+---
 
-- project name: **TuneDeck**
-- playlists and likes are stored locally on the device
-- the program license section in-app points to **GNU GENERAL PUBLIC LICENSE Version 3**
-- the music terms section is intentionally left as your own placeholder text
+## 📂 Project Structure
 
+```bash
+main.js
+preload.js
+src/
+ ├── app.js
+ ├── styles.css
+ ├── index.html
+ └── assets/
+```
 
-## Latest UI updates
+---
 
-- generated gradient playlist covers inspired by Deezer / Apple Music
-- no login avatar in the top bar
-- song page actions cleaned up and license modal added
-- clicking player cover or title opens the song page
-- clicking artist names opens the artist page everywhere in the app
+## 🧠 Technology Stack
+
+- Electron
+- Vanilla JavaScript
+- HTML5 / CSS3
+- Electron Store
+
+---
+
+## 📌 Roadmap
+
+- [ ] Advanced recommendation algorithm
+- [ ] Custom equalizer presets
+- [ ] Lyrics support
+- [ ] Social sharing / profile system
+- [ ] Theme customization
+
+---
+
+## 📄 License
+
+This software is licensed under **GNU GPL v3**.  
+Additional music licensing terms apply separately.
+
+---
+
+## © Copyright
+
+**© SchmittDEV**  
+All rights reserved.
+
+---
+
+<p align="center">
+Made with ❤️ by SchmittDEV
+</p>
