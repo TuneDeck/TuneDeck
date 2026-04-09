@@ -1,7 +1,7 @@
 {
   "name": "tunedeck",
-  "version": "0.7.0",
-  "description": "Modern TuneDeck desktop prototype with queue, playlists, song pages, artist pages and settings using an external PHP API.",
+  "version": "0.8.0",
+  "description": "TuneDeck v0.8.0 with audio engine foundation and dual-output preparation for future OBS integration.",
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
@@ -29,7 +29,9 @@
       "preload.js",
       "src/**/*",
       "package.json",
-      "README.md"
+      "README.md",
+      "bridge/**/*",
+      "docs/**/*"
     ],
     "win": {
       "target": [

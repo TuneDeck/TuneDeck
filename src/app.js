@@ -2,6 +2,7 @@ const API_BASE = 'https://api.schmittdev.org/ncsplayer/public/api.php';
 
 const $ = (id) => document.getElementById(id);
 const audio = $('audio');
+const player = new window.TuneDeckPlayerAdapter({ audioEl: audio });
 
 const state = {
   view: 'home',
@@ -31,6 +32,11 @@ const state = {
   songsTotal: 0,
   songsPerPage: 100,
   isLoadingMoreSongs: false,
+  audioEngine: {
+    mode: 'dual-output-prep',
+    localReady: true,
+    broadcastReady: false,
+  },
 };
 
 const els = {
@@ -353,7 +359,6 @@ async function loadPersistedState() {
   if (typeof state.repeatOne !== 'boolean') state.repeatOne = false;
   const volume = await window.ncsDesktop.getStore('volume');
   if (typeof volume === 'number') {
-    audio.volume = volume;
     els.volumeBar.value = Math.round(volume * 100);
   }
 }
@@ -623,9 +628,7 @@ async function playTrack(song, queue = []) {
     state.queueIndex = 0;
   }
   updateQueueUi();
-  audio.src = normalizedSong.audio_url;
-  audio.load();
-  await audio.play();
+  await player.play(normalizedSong);
   setPlayerUi(normalizedSong);
   await pushRecent(normalizedSong);
 }
@@ -1149,6 +1152,23 @@ function updateWindowButtons() {
   }).catch(() => {});
 }
 
+
+function renderBridgeStatus(status = {}) {
+  state.audioEngine.mode = status.mode || state.audioEngine.mode;
+  state.audioEngine.localReady = status.localOutputReady ?? state.audioEngine.localReady;
+  state.audioEngine.broadcastReady = status.broadcastOutputReady ?? state.audioEngine.broadcastReady;
+}
+
+async function refreshBridgeStatus() {
+  if (!window.ncsDesktop?.bridgeStatus) return;
+  try {
+    const status = await window.ncsDesktop.bridgeStatus();
+    renderBridgeStatus(status || {});
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 function bindEvents() {
   els.navItems.forEach((btn) => btn.addEventListener('click', () => switchView(btn.dataset.view)));
   els.switchers.forEach((btn) => btn.addEventListener('click', () => switchView(btn.dataset.switchView)));
@@ -1193,9 +1213,10 @@ function bindEvents() {
     renderGrid(els.discoverGrid, state.songs, state.displayMode);
   }));
   els.playPauseBtn.addEventListener('click', async () => {
-    if (!audio.src) return state.songs.length ? playTrack(state.songs[0], state.songs) : null;
-    if (audio.paused) await audio.play();
-    else audio.pause();
+    const playerStatus = player.getStatus();
+    if (!playerStatus?.track?.audio_url && !state.currentTrack) return state.songs.length ? playTrack(state.songs[0], state.songs) : null;
+    if (playerStatus?.state === 'paused') await player.resume();
+    else await player.pause();
   });
   els.nextBtn.addEventListener('click', () => nextTrack());
   els.prevBtn.addEventListener('click', prevTrack);
@@ -1210,18 +1231,23 @@ function bindEvents() {
   els.settingsBackdrop.addEventListener('click', () => toggleSettingsDrawer(false));
   els.openGplLicenseBtn.addEventListener('click', () => openLicenseModal('GNU GPL v3', './licenses/gpl.html'));
   els.openNcsLicenseBtn.addEventListener('click', () => openLicenseModal('NCS / Music terms', './licenses/ncs-license.html'));
-  els.volumeBar.addEventListener('input', async () => { updateRangeVisual(els.volumeBar); audio.volume = Number(els.volumeBar.value) / 100; await persist('volume', audio.volume); });
+  els.volumeBar.addEventListener('input', async () => { const volume = Number(els.volumeBar.value) / 100; updateRangeVisual(els.volumeBar); await player.setVolume(volume); await persist('volume', volume); });
   els.likeBtn.addEventListener('click', toggleLike);
   els.playerCoverButton.addEventListener('click', () => { if (state.currentTrack) openSongDetail(state.currentTrack); });
-  els.progressBar.addEventListener('input', () => { updateRangeVisual(els.progressBar); if (audio.duration) audio.currentTime = (Number(els.progressBar.value) / 100) * audio.duration; });
-  audio.addEventListener('timeupdate', () => {
-    els.currentTime.textContent = formatTime(audio.currentTime);
-    els.durationTime.textContent = formatTime(audio.duration);
-    els.progressBar.value = audio.duration ? Math.round((audio.currentTime / audio.duration) * 100) : 0;
+  els.progressBar.addEventListener('input', async () => { const status = player.getStatus(); updateRangeVisual(els.progressBar); if (status.duration) await player.seek((Number(els.progressBar.value) / 100) * status.duration); });  player.on('status', (status) => {
+    els.currentTime.textContent = formatTime(status.position || 0);
+    els.durationTime.textContent = formatTime(status.duration || 0);
+    els.progressBar.value = status.duration ? Math.round(((status.position || 0) / status.duration) * 100) : 0;
     updateRangeVisual(els.progressBar);
+    els.playPauseBtn.textContent = status.state === 'playing' ? '❚❚' : '▶';
   });
-  audio.addEventListener('play', () => (els.playPauseBtn.textContent = '❚❚'));
-  audio.addEventListener('pause', () => (els.playPauseBtn.textContent = '▶'));
+  player.on('error', (error) => {
+    console.error(error);
+    toast(error?.message || 'Playback could not be started.');
+  });
+  player.on('broadcast-status', (broadcastStatus) => {
+    state.audioEngine.broadcastReady = !!broadcastStatus?.connected;
+  });
   audio.addEventListener('ended', () => { if (state.repeatOne) playTrack(state.currentTrack, state.queue); else nextTrack(); });
   els.artistPlayBtn.addEventListener('click', async () => {
     if (!state.currentArtist) return;
@@ -1246,6 +1272,14 @@ async function init() {
   updateRangeVisual(els.progressBar, els.progressBar.value);
   updateRangeVisual(els.volumeBar, els.volumeBar.value);
   updateWindowButtons();
+  await player.setVolume(Number(els.volumeBar.value || 75) / 100);
+  try {
+    const bridgeState = await window.ncsDesktop?.bridgeStart?.();
+    renderBridgeStatus(bridgeState || {});
+    window.setTimeout(refreshBridgeStatus, 150);
+  } catch (err) {
+    console.error(err);
+  }
   try {
     const firstPage = await fetchSongsPage(1, state.songsPerPage);
     state.songs = firstPage.rows;

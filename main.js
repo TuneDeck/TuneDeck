@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
+const { spawn } = require('node:child_process');
 const Store = require('electron-store').default;
 
 const store = new Store({
@@ -11,6 +12,80 @@ const store = new Store({
     autoplay: true,
   },
 });
+
+let bridgeProcess = null;
+let bridgeState = {
+  bridgeReady: false,
+  pluginConnected: false,
+  localOutputReady: true,
+  broadcastOutputReady: false,
+  sampleRate: 48000,
+  channels: 2,
+  mode: 'dual-output-prep',
+  running: false,
+};
+
+function startBridgeProcess() {
+  if (bridgeProcess) return bridgeState;
+  const scriptPath = path.join(__dirname, 'bridge', 'tunedeck-audio-bridge-mock.js');
+  bridgeProcess = spawn(process.execPath, [scriptPath], {
+    cwd: __dirname,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+
+  bridgeState.running = true;
+
+  bridgeProcess.stdout.setEncoding('utf8');
+  bridgeProcess.stdout.on('data', (chunk) => {
+    const lines = chunk.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      try {
+        const msg = JSON.parse(line);
+        if (msg.type === 'status' || msg.type === 'pong' || msg.type === 'ack') {
+          bridgeState = {
+            ...bridgeState,
+            ...msg,
+            running: true,
+          };
+        }
+      } catch {}
+    }
+  });
+
+  bridgeProcess.on('exit', () => {
+    bridgeProcess = null;
+    bridgeState = {
+      ...bridgeState,
+      bridgeReady: false,
+      pluginConnected: false,
+      broadcastOutputReady: false,
+      running: false,
+    };
+  });
+
+  return bridgeState;
+}
+
+function stopBridgeProcess() {
+  if (bridgeProcess) {
+    bridgeProcess.kill();
+    bridgeProcess = null;
+  }
+  bridgeState = {
+    ...bridgeState,
+    bridgeReady: false,
+    pluginConnected: false,
+    broadcastOutputReady: false,
+    running: false,
+  };
+  return bridgeState;
+}
+
+function sendBridgeMessage(message) {
+  if (!bridgeProcess || !bridgeProcess.stdin.writable) return false;
+  bridgeProcess.stdin.write(JSON.stringify(message) + '\n');
+  return true;
+}
 
 let mainWindow;
 
@@ -43,6 +118,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  startBridgeProcess();
   createWindow();
 
   app.on('activate', () => {
@@ -93,4 +169,33 @@ ipcMain.handle('window:close', () => {
 ipcMain.handle('window:isMaximized', () => {
   const win = BrowserWindow.getFocusedWindow() || mainWindow;
   return !!win?.isMaximized();
+});
+
+
+ipcMain.handle('audio-engine:status', () => ({
+  mode: 'dual-output-prep',
+  localReady: true,
+  broadcastReady: false,
+  bridgeConnected: false,
+}));
+
+
+ipcMain.handle('bridge:start', () => {
+  startBridgeProcess();
+  return bridgeState;
+});
+
+ipcMain.handle('bridge:stop', () => stopBridgeProcess());
+
+ipcMain.handle('bridge:status', () => bridgeState);
+
+ipcMain.handle('bridge:connect-plugin-mock', () => {
+  startBridgeProcess();
+  sendBridgeMessage({ type: 'bridge.connect' });
+  return bridgeState;
+});
+
+ipcMain.handle('bridge:disconnect-plugin-mock', () => {
+  if (bridgeProcess) sendBridgeMessage({ type: 'bridge.disconnect' });
+  return bridgeState;
 });

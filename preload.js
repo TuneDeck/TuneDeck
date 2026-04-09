@@ -9,4 +9,10 @@ contextBridge.exposeInMainWorld('ncsDesktop', {
   toggleMaximizeWindow: () => ipcRenderer.invoke('window:toggleMaximize'),
   closeWindow: () => ipcRenderer.invoke('window:close'),
   isWindowMaximized: () => ipcRenderer.invoke('window:isMaximized'),
+  audioEngineStatus: () => ipcRenderer.invoke('audio-engine:status'),
+  bridgeStatus: () => ipcRenderer.invoke('bridge:status'),
+  bridgeStart: () => ipcRenderer.invoke('bridge:start'),
+  bridgeStop: () => ipcRenderer.invoke('bridge:stop'),
+  bridgeConnectPluginMock: () => ipcRenderer.invoke('bridge:connect-plugin-mock'),
+  bridgeDisconnectPluginMock: () => ipcRenderer.invoke('bridge:disconnect-plugin-mock'),
 });
